@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,7 +23,7 @@ const AgentLayout = () => {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#007AFF",
+        tabBarActiveTintColor: "#08CB00",
         tabBarInactiveTintColor: "#8E8E93",
         tabBarStyle: {
           backgroundColor: "#fff",
@@ -38,7 +38,7 @@ const AgentLayout = () => {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="tachometer-alt" size={size} color={color} />
+            <FontAwesome name="dashboard" size={size} color={color} />
           ),
         }}
       />

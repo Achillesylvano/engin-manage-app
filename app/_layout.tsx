@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native";
@@ -13,6 +14,8 @@ const roleRoutes = {
   operateur: "/(operateur)" as const,
   technicien: "/(technicien)" as const,
 };
+
+const queryClient = new QueryClient();
 
 function Header() {
   const { authToken, isLoading, user } = useAuth();
@@ -45,8 +48,10 @@ const RootLayout = () => {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <Header />
-        <Slot />
+        <QueryClientProvider client={queryClient}>
+          <Header />
+          <Slot />
+        </QueryClientProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
