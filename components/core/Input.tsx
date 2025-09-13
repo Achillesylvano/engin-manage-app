@@ -19,9 +19,9 @@ const Input = ({
   return (
     <View className="w-full mb-4">
       <TextInput
-        className={`w-full h-12 border rounded-md px-3 mb-1
-    bg-white text-black
-    ${isFocused ? "border-green-500" : error ? "border-red-500" : "border-gray-300"}
+        className={`w-full h-12 border-2 rounded-xl px-3 mb-1
+    bg-gray-50 text-gray-900 font-medium
+    ${isFocused ? "border-green-500 bg-white" : error ? "border-red-500" : "border-gray-300"}
   `}
         value={value}
         placeholder={placeholder}

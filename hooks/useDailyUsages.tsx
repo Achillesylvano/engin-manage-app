@@ -1,5 +1,3 @@
-// src/hooks/useDailyUsages.ts
-
 import {
   getDailyUsages,
   storeDailyUsage,
@@ -12,35 +10,20 @@ import {
   useQuery, // hook pour récupérer et mettre en cache les données
   useQueryClient, // permet d’accéder au client TanStack Query pour invalider le cache
 } from "@tanstack/react-query";
+import { DailyUsageSortie, PaginatedResponse } from "../types";
 
-// --- Typage pour les réponses paginées de Laravel ---
-interface PaginatedResponse<T> {
-  data: T[]; // Les éléments de la page actuelle
-  meta: {
-    current_page: number; // numéro de la page actuelle
-    last_page: number; // dernière page disponible
-    per_page: number; // nombre d'éléments par page
-    total: number; // nombre total d'éléments
-  };
-  links: {
-    first: string; // lien vers la première page
-    last: string; // lien vers la dernière page
-    prev: string | null; // lien vers la page précédente
-    next: string | null; // lien vers la page suivante
-  };
+interface DailyUsageResponse {
+  message: string;
+  data: any;
 }
 
-// --- Hook récupération paginée avec filtres ---
-// Ce hook permet de récupérer les DailyUsages de façon paginée et filtrée.
-// TanStack Query met en cache les pages et gère automatiquement le loading/error.
-// Le paramètre `filters` est optionnel et peut inclure plusieurs critères.
 export const useDailyUsages = (
   page: number,
   filters?: {
-    numero_serie?: string; // recherche par numéro de série de l'engin
-    operateur?: string; // filtre par nom de l'opérateur
-    is_returned?: "0" | "1"; // 0 = sortie, 1 = retour (adapté au backend)
-    sort?: string; // tri optionnel, ex: "-date_usage"
+    numero_serie?: string;
+    operateur?: string;
+    is_returned?: "0" | "1";
+    sort?: string;
   }
 ) => {
   return useQuery<PaginatedResponse<DailyUsage>, Error>({
@@ -48,21 +31,6 @@ export const useDailyUsages = (
     queryFn: () => getDailyUsages(page, filters), // appelle le service qui récupère les données
     placeholderData: keepPreviousData, // affiche l’ancienne page pendant le chargement de la nouvelle
     // Remarque : si aucun filtre ou page n’a changé, TanStack Query renvoie les données du cache
-  });
-};
-
-// --- Hook création d’un DailyUsage ---
-// Ce hook gère la création d’un nouveau DailyUsage côté backend.
-// Après la réussite de la mutation, on invalide la query pour rafraîchir la liste.
-export const useStoreDailyUsage = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (payload: Partial<DailyUsage>) => storeDailyUsage(payload),
-    onSuccess: () => {
-      // Invalide les queries liées à 'dailyUsages' pour forcer le rechargement
-      queryClient.invalidateQueries({ queryKey: ["dailyUsages"] });
-    },
   });
 };
 
@@ -82,6 +50,17 @@ export const useUpdateDailyUsage = () => {
     }) => updateDailyUsage(id, payload),
     onSuccess: () => {
       // Invalide le cache pour forcer la mise à jour de la liste
+      queryClient.invalidateQueries({ queryKey: ["dailyUsages"] });
+    },
+  });
+};
+
+export const useCreateDailyUsage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<DailyUsageResponse, any, DailyUsageSortie>({
+    mutationFn: storeDailyUsage,
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dailyUsages"] });
     },
   });

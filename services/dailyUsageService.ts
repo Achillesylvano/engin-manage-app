@@ -1,21 +1,10 @@
 // src/services/dailyUsageService.ts
 import axiosInstance from "@/config/axiosConfig";
-import type { DailyUsage } from "@/types";
+import type { DailyUsage, DailyUsageSortie, PaginatedResponse } from "@/types";
 
-interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
-  links: {
-    first: string;
-    last: string;
-    prev: string | null;
-    next: string | null;
-  };
+interface DailyUsageResponse {
+  message: string;
+  data: any;
 }
 
 // --- Récupération avec pagination et filtres ---
@@ -48,11 +37,20 @@ export const getDailyUsages = async (
 };
 
 // --- Création d’un nouveau DailyUsage ---
+// Crée une daily usage et renvoie uniquement les erreurs si elles existent
+
 export const storeDailyUsage = async (
-  payload: Partial<DailyUsage>
-): Promise<DailyUsage> => {
-  const res = await axiosInstance.post("/daily-usages", payload);
-  return res.data.data; // retourne l’objet DailyUsage créé
+  data: DailyUsageSortie
+): Promise<DailyUsageResponse> => {
+  try {
+    const res = await axiosInstance.post("/api/daily-usages", data);
+    return res.data;
+  } catch (err: any) {
+    if (err.response?.status === 422) {
+      throw err.response.data.errors; // uniquement les erreurs de validation Laravel
+    }
+    throw err;
+  }
 };
 
 // --- Mise à jour d’un DailyUsage existant ---

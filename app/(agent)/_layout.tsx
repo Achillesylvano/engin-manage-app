@@ -43,6 +43,17 @@ const AgentLayout = () => {
         }}
       />
 
+      {/* Sortie */}
+      <Tabs.Screen
+        name="sortie"
+        options={{
+          title: "Sortie",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="exit-to-app" size={size} color={color} />
+          ),
+        }}
+      />
+
       {/* Incident */}
       <Tabs.Screen
         name="incident"
