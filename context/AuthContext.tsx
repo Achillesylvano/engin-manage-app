@@ -1,5 +1,6 @@
 import axiosInstance from "@/config/axiosConfig";
 import { useStorageState } from "@/hooks/useStorageState";
+import { User } from "@/types";
 import { isAxiosError } from "axios";
 import { router } from "expo-router";
 import {
@@ -10,16 +11,6 @@ import {
   useEffect,
 } from "react";
 import { Alert } from "react-native";
-
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  matricule?: string;
-  created_at?: string;
-  updated_at?: string;
-}
 
 interface AuthContextType {
   login: (token: string, user: User) => void;

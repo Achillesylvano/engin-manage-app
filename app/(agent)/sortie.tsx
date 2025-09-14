@@ -116,7 +116,7 @@ export default function EnginsScreen() {
       observation_depart: "",
       heure_sortie: "",
       heure_retour: "",
-      is_returned: false, // toujours false à la sortie
+      is_returned: false,
       compteur_h_sortie: null,
       compteur_km_sortie: null,
       compteur_h_retour: null,
@@ -152,20 +152,15 @@ export default function EnginsScreen() {
 
     createDailyUsage(submitData, {
       onError: (validationErrors: Record<string, string[]>) => {
-        // Convertir en { champ: message } pour l'affichage
         const fieldErrors: { [key: string]: string } = {};
         Object.keys(validationErrors).forEach((key) => {
-          fieldErrors[key] = validationErrors[key][0]; // prendre le premier message
+          fieldErrors[key] = validationErrors[key][0];
         });
-        Alert.alert(
-          "Erreurs de validation",
-          Object.values(fieldErrors).join("\n")
-        );
         setErrors(fieldErrors);
       },
       onSuccess: (data) => {
         console.log("DailyUsage créé:", data);
-        closeModal(); // Close modal on success
+        closeModal();
         Alert.alert("Sortie enregistrer ");
       },
     });

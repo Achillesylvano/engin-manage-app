@@ -81,3 +81,12 @@ export interface DailyUsageSortie {
   compteur_h_sortie: number;
   compteur_km_sortie: number;
 }
+
+export interface DailyUsageRetour {
+  heure_retour: string;
+  compteur_h_retour: number;
+  compteur_km_retour: number;
+  observation_retour?: string | null;
+  carburant_rempli_l?: number | null;
+  is_returned: true;
+}

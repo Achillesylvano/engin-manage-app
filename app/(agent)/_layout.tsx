@@ -1,5 +1,9 @@
 import { useAuth } from "@/context/AuthContext";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -54,13 +58,29 @@ const AgentLayout = () => {
         }}
       />
 
+      {/* Retour */}
+      <Tabs.Screen
+        name="retour"
+        options={{
+          title: "Retour",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="open-in-app"
+              size={size}
+              color={color}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
+          ),
+        }}
+      />
+
       {/* Incident */}
       <Tabs.Screen
-        name="incident"
+        name="profile"
         options={{
-          title: "Incident",
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="report-problem" size={size} color={color} />
+            <MaterialIcons name="settings" size={size} color={color} />
           ),
         }}
       />

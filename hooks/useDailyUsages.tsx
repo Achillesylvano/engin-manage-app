@@ -1,20 +1,26 @@
 import {
   getDailyUsages,
+  getDailyUsagesEncours,
   storeDailyUsage,
   updateDailyUsage,
-} from "@/services/dailyUsageService"; // Services pour appels API vers Laravel
-import type { DailyUsage } from "@/types"; // Typage TypeScript de DailyUsage
+} from "@/services/dailyUsageService";
+import type { DailyUsage, DailyUsageRetour } from "@/types";
 import {
-  keepPreviousData, // utilitaire de TanStack Query pour garder les données précédentes pendant le rechargement
-  useMutation, // hook pour gérer les mutations (POST/PUT/DELETE)
-  useQuery, // hook pour récupérer et mettre en cache les données
-  useQueryClient, // permet d’accéder au client TanStack Query pour invalider le cache
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { DailyUsageSortie, PaginatedResponse } from "../types";
 
 interface DailyUsageResponse {
   message: string;
   data: any;
+}
+
+interface UpdateParams {
+  id: number;
+  payload: DailyUsageRetour;
 }
 
 export const useDailyUsages = (
@@ -27,30 +33,35 @@ export const useDailyUsages = (
   }
 ) => {
   return useQuery<PaginatedResponse<DailyUsage>, Error>({
-    queryKey: ["dailyUsages", page, filters], // cache différent pour chaque page + filtre
-    queryFn: () => getDailyUsages(page, filters), // appelle le service qui récupère les données
-    placeholderData: keepPreviousData, // affiche l’ancienne page pendant le chargement de la nouvelle
-    // Remarque : si aucun filtre ou page n’a changé, TanStack Query renvoie les données du cache
+    queryKey: ["dailyUsages", page, filters],
+    queryFn: () => getDailyUsages(page, filters),
+    placeholderData: keepPreviousData,
   });
 };
 
-// --- Hook mise à jour d’un DailyUsage ---
-// Ce hook gère la modification d’un DailyUsage existant.
-// La mutation prend un objet contenant `id` et `payload` (les champs à modifier)
+export const useDailyUsagesEncours = (
+  page: number,
+  filters?: {
+    numero_serie?: string;
+    operateur?: string;
+    sort?: string;
+  }
+) => {
+  return useQuery<PaginatedResponse<DailyUsage>, Error>({
+    queryKey: ["dailyUsagesEncours", page, filters],
+    queryFn: () => getDailyUsagesEncours(page, filters),
+    placeholderData: keepPreviousData,
+  });
+};
+
 export const useUpdateDailyUsage = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: number; // ID de l’élément à mettre à jour
-      payload: Partial<DailyUsage>; // Champs à modifier
-    }) => updateDailyUsage(id, payload),
+  return useMutation<DailyUsageResponse, any, UpdateParams>({
+    mutationFn: ({ id, payload }) => updateDailyUsage(id, payload),
     onSuccess: () => {
-      // Invalide le cache pour forcer la mise à jour de la liste
       queryClient.invalidateQueries({ queryKey: ["dailyUsages"] });
+      queryClient.invalidateQueries({ queryKey: ["dailyUsagesEncours"] }); // si utilisé
     },
   });
 };
