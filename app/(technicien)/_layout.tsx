@@ -1,19 +1,19 @@
 import { useAuth } from "@/context/AuthContext";
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { Redirect, Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const TechnicienLayout = () => {
+const AgentLayout = () => {
   const { user, isLoading } = useAuth();
   const insets = useSafeAreaInsets();
 
   // Redirection si le rôle n'est pas technicien
   if (!isLoading && user?.role !== "technicien") {
     switch (user?.role) {
-      case "agent_suivi":
-        return <Redirect href="/(agent)" />;
       case "operateur":
         return <Redirect href="/(operateur)" />;
+      case "agent_suivi":
+        return <Redirect href="/(agent)" />;
       default:
         return <Redirect href="/login" />;
     }
@@ -23,7 +23,7 @@ const TechnicienLayout = () => {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#007AFF",
+        tabBarActiveTintColor: "#08CB00",
         tabBarInactiveTintColor: "#8E8E93",
         tabBarStyle: {
           backgroundColor: "#fff",
@@ -38,18 +38,18 @@ const TechnicienLayout = () => {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome5 name="tachometer-alt" size={size} color={color} />
+            <FontAwesome name="dashboard" size={size} color={color} />
           ),
         }}
       />
 
       {/* Incident */}
       <Tabs.Screen
-        name="incident"
+        name="profile"
         options={{
-          title: "Incident",
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="report-problem" size={size} color={color} />
+            <MaterialIcons name="settings" size={size} color={color} />
           ),
         }}
       />
@@ -57,4 +57,4 @@ const TechnicienLayout = () => {
   );
 };
 
-export default TechnicienLayout;
+export default AgentLayout;
