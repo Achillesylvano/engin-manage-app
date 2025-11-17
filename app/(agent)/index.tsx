@@ -16,7 +16,8 @@ import { DailyUsageCard } from "@/components/app/DailyUsageCard";
 import Pagination from "@/components/core/Pagination";
 import { useDailyUsages } from "@/hooks/useDailyUsages";
 import React, { useState } from "react";
-import { SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type IsReturned = "0" | "1" | undefined;
 

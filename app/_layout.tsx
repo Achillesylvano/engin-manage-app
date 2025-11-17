@@ -2,9 +2,9 @@ import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native";
 import {
   SafeAreaProvider,
+  SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import "../global.css";
