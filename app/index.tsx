@@ -2,9 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { ChartBar as BarChart3, Settings, Truck } from "lucide-react-native";
 import React from "react";
-import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
-
-const { width, height } = Dimensions.get("window");
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function WelcomePage() {
   return (

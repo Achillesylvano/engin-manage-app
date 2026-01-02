@@ -1,12 +1,16 @@
+import Pagination from "@/components/core/Pagination";
+import { useMaintenance } from "@/hooks/useMaintenance";
 import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
   Clock,
   Search,
+  XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -15,93 +19,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface Mission {
-  id: string;
-  equipmentSerial: string;
-  equipmentType: string;
-  maintenanceType: string;
-  scheduledDate: string;
-  priority: "critical" | "urgent" | "normal";
-  status: "pending" | "in_progress" | "completed";
-  description: string;
-  estimatedDuration: string;
-  technician: string;
-  location: string;
-}
-
-const allMissions: Mission[] = [
-  {
-    id: "1",
-    equipmentSerial: "EXC-2023-001",
-    equipmentType: "Excavatrice CAT 320",
-    maintenanceType: "Révision générale",
-    scheduledDate: "2024-01-15",
-    priority: "critical",
-    status: "pending",
-    description: "Révision complète du moteur et vérification hydraulique",
-    estimatedDuration: "4h",
-    technician: "Jean Dupont",
-    location: "Chantier A - Zone 1",
-  },
-  {
-    id: "2",
-    equipmentSerial: "BLD-2023-007",
-    equipmentType: "Bulldozer Komatsu D65",
-    maintenanceType: "Maintenance préventive",
-    scheduledDate: "2024-01-16",
-    priority: "urgent",
-    status: "pending",
-    description: "Changement huile moteur et filtres",
-    estimatedDuration: "2h",
-    technician: "Marie Martin",
-    location: "Atelier principal",
-  },
-  {
-    id: "3",
-    equipmentSerial: "GRU-2023-003",
-    equipmentType: "Grue mobile Liebherr",
-    maintenanceType: "Inspection sécurité",
-    scheduledDate: "2024-01-17",
-    priority: "normal",
-    status: "in_progress",
-    description: "Contrôle des câbles et systèmes de sécurité",
-    estimatedDuration: "3h",
-    technician: "Pierre Leroy",
-    location: "Chantier B - Zone 2",
-  },
-  {
-    id: "4",
-    equipmentSerial: "CHG-2023-012",
-    equipmentType: "Chargeuse Volvo L120",
-    maintenanceType: "Réparation",
-    scheduledDate: "2024-01-18",
-    priority: "critical",
-    status: "pending",
-    description: "Remplacement pompe hydraulique défaillante",
-    estimatedDuration: "6h",
-    technician: "Jean Dupont",
-    location: "Atelier principal",
-  },
-  {
-    id: "5",
-    equipmentSerial: "TRA-2023-005",
-    equipmentType: "Tracteur John Deere",
-    maintenanceType: "Maintenance préventive",
-    scheduledDate: "2024-01-19",
-    priority: "normal",
-    status: "completed",
-    description: "Vidange complète et vérification générale",
-    estimatedDuration: "2h",
-    technician: "Marie Martin",
-    location: "Chantier C - Zone 1",
-  },
-];
+type Filters = {
+  type?: string;
+  statut?: string;
+  numero_serie?: string;
+};
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
-    case "critical":
+    case "corrective":
       return "bg-red-100 border-red-500";
-    case "urgent":
+    case "préventive":
       return "bg-orange-100 border-orange-500";
     default:
       return "bg-blue-100 border-blue-500";
@@ -110,9 +38,9 @@ const getPriorityColor = (priority: string) => {
 
 const getPriorityTextColor = (priority: string) => {
   switch (priority) {
-    case "critical":
+    case "corrective":
       return "text-red-700";
-    case "urgent":
+    case "préventive":
       return "text-orange-700";
     default:
       return "text-blue-700";
@@ -121,9 +49,9 @@ const getPriorityTextColor = (priority: string) => {
 
 const getPriorityIcon = (priority: string) => {
   switch (priority) {
-    case "critical":
+    case "corrective":
       return <AlertTriangle size={16} color="#dc2626" />;
-    case "urgent":
+    case "préventive":
       return <Clock size={16} color="#ea580c" />;
     default:
       return <Calendar size={16} color="#2563eb" />;
@@ -132,10 +60,18 @@ const getPriorityIcon = (priority: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "completed":
-      return "bg-green-100 text-green-800";
-    case "in_progress":
+    case "Planifiée":
+      return "bg-blue-100 text-blue-800";
+
+    case "En cours":
       return "bg-yellow-100 text-yellow-800";
+
+    case "Terminée":
+      return "bg-green-100 text-green-800";
+
+    case "Annulée":
+      return "bg-red-100 text-red-800";
+
     default:
       return "bg-gray-100 text-gray-800";
   }
@@ -143,52 +79,54 @@ const getStatusColor = (status: string) => {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case "completed":
-      return <CheckCircle2 size={16} color="#059669" />;
-    case "in_progress":
+    case "Planifiée":
+      return <Calendar size={16} color="#2563eb" />;
+
+    case "En cours":
       return <Clock size={16} color="#d97706" />;
+
+    case "Terminée":
+      return <CheckCircle2 size={16} color="#059669" />;
+
+    case "Annulée":
+      return <XCircle size={16} color="#dc2626" />;
+
     default:
       return <Calendar size={16} color="#6b7280" />;
   }
 };
 
 export default function MissionsScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "pending" | "in_progress" | "completed"
-  >("all");
-
-  const filteredMissions = allMissions.filter((mission) => {
-    const matchesSearch =
-      mission.equipmentSerial
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      mission.equipmentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mission.maintenanceType.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesFilter =
-      selectedFilter === "all" || mission.status === selectedFilter;
-
-    return matchesSearch && matchesFilter;
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Filters>({
+    type: "",
+    statut: "",
+    numero_serie: "",
   });
 
-  const filterButtons = [
-    { key: "all", label: "Toutes", count: allMissions.length },
-    {
-      key: "pending",
-      label: "En attente",
-      count: allMissions.filter((m) => m.status === "pending").length,
-    },
-    {
-      key: "in_progress",
-      label: "En cours",
-      count: allMissions.filter((m) => m.status === "in_progress").length,
-    },
-    {
-      key: "completed",
-      label: "Terminées",
-      count: allMissions.filter((m) => m.status === "completed").length,
-    },
+  // Met à jour filtre
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+    console.log("FILTER UPDATE →", key, value);
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+  };
+
+  const { data, isLoading, error } = useMaintenance(page, filters);
+
+  if (isLoading)
+    return <Text className="text-center mt-10">Chargement...</Text>;
+  if (error)
+    return <Text className="text-center mt-10">Erreur : {String(error)}</Text>;
+
+  const maintenances = data?.data ?? [];
+  const lastPage = data?.meta?.last_page ?? 1;
+
+  const STATUTS = [
+    { label: "Tous", value: "" },
+    { label: "Annulée", value: "annulee" },
+    { label: "En cours", value: "en cours" },
+    { label: "Terminée", value: "terminee" },
+    { label: "Planifiée", value: "planifiee" },
   ];
 
   return (
@@ -199,101 +137,84 @@ export default function MissionsScreen() {
           Missions de maintenance
         </Text>
 
-        {/* Search Bar */}
-        <View className="relative">
-          <Search
-            size={20}
-            color="#6b7280"
-            className="absolute left-3 top-3 z-10"
-          />
-          <TextInput
-            className="bg-gray-100 rounded-lg py-3 px-10 text-gray-900"
-            placeholder="Rechercher par série, type d'engin..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#6b7280"
-          />
+        {/* Filtres */}
+        {/* Numéro de série */}
+        <View>
+          <Text className="text-sm font-semibold text-gray-700 mb-2">
+            Numéro de série
+          </Text>
+          <View className="relative">
+            <View className="absolute left-4 top-4 z-10">
+              <Search size={18} color="#9CA3AF" />
+            </View>
+            <TextInput
+              placeholder="Rechercher un numéro de série..."
+              placeholderTextColor="#9CA3AF"
+              value={filters.numero_serie}
+              onChangeText={(text) => updateFilter("numero_serie", text)}
+              className="bg-gray-50 border-2 border-gray-200 rounded-xl pl-12 pr-4 py-4 text-gray-900 font-medium focus:border-green-500 focus:bg-white"
+            />
+          </View>
         </View>
       </View>
 
-      {/* Filter Buttons */}
+      {/* Filter Buttons statut*/}
       <View className="bg-white px-6 py-4 border-b border-gray-200">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row space-x-3">
-            {filterButtons.map((filter) => (
-              <TouchableOpacity
-                key={filter.key}
-                onPress={() => setSelectedFilter(filter.key as any)}
-                className={`px-4 py-2 rounded-full flex-row items-center ${
-                  selectedFilter === filter.key ? "bg-blue-600" : "bg-gray-100"
-                }`}
-              >
-                <Text
-                  className={`font-medium ${
-                    selectedFilter === filter.key
-                      ? "text-white"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {filter.label}
-                </Text>
-                <View
-                  className={`ml-2 px-2 py-1 rounded-full ${
-                    selectedFilter === filter.key
-                      ? "bg-blue-500"
-                      : "bg-gray-200"
-                  }`}
+          <View>
+            <View className="flex-row flex-wrap gap-2">
+              {STATUTS.map((statut) => (
+                <Pressable
+                  key={statut.value}
+                  onPress={() => updateFilter("statut", statut.value)}
+                  className={`px-4 py-2 rounded-xl border
+          ${
+            filters.statut === statut.value
+              ? "bg-green-600 border-green-600"
+              : "bg-gray-50 border-gray-200"
+          }
+        `}
                 >
                   <Text
-                    className={`text-xs font-bold ${
-                      selectedFilter === filter.key
-                        ? "text-white"
-                        : "text-gray-600"
-                    }`}
+                    className={`font-medium
+            ${filters.statut === statut.value ? "text-white" : "text-gray-700"}
+          `}
                   >
-                    {filter.count}
+                    {statut.label}
                   </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </Pressable>
+              ))}
+            </View>
           </View>
         </ScrollView>
       </View>
 
       {/* Mission List */}
       <ScrollView className="flex-1 px-6 py-4">
-        {filteredMissions.map((mission) => (
+        {maintenances.map((mission) => (
           <TouchableOpacity
             key={mission.id}
-            className={`mb-4 bg-white rounded-lg border-l-4 ${getPriorityColor(mission.priority)} shadow-sm`}
+            className={`mb-4 bg-white rounded-lg border-l-4 ${getPriorityColor(mission.type)} shadow-sm`}
             activeOpacity={0.7}
           >
             <View className="p-4">
               {/* Header with Priority and Status */}
               <View className="flex-row items-center justify-between mb-3">
                 <View className="flex-row items-center">
-                  {getPriorityIcon(mission.priority)}
+                  {getPriorityIcon(mission.type)}
                   <Text
-                    className={`ml-2 text-xs font-semibold uppercase tracking-wide ${getPriorityTextColor(mission.priority)}`}
+                    className={`ml-2 text-xs font-semibold uppercase tracking-wide ${getPriorityTextColor(mission.type)}`}
                   >
-                    {mission.priority === "critical"
-                      ? "Critique"
-                      : mission.priority === "urgent"
-                        ? "Urgent"
-                        : "Normal"}
+                    {mission.type === "corrective" ? "Urgent" : "Normal"}
                   </Text>
                 </View>
 
                 <View
-                  className={`px-3 py-1 rounded-full flex-row items-center ${getStatusColor(mission.status)}`}
+                  className={`px-3 py-1 rounded-full flex-row items-center ${getStatusColor(mission.statut)}`}
                 >
-                  {getStatusIcon(mission.status)}
+                  {getStatusIcon(mission.statut)}
                   <Text className="ml-1 text-xs font-medium">
-                    {mission.status === "pending"
-                      ? "En attente"
-                      : mission.status === "in_progress"
-                        ? "En cours"
-                        : "Terminé"}
+                    {mission.statut}
                   </Text>
                 </View>
               </View>
@@ -301,17 +222,17 @@ export default function MissionsScreen() {
               {/* Equipment Info */}
               <View className="mb-3">
                 <Text className="text-lg font-semibold text-gray-900 mb-1">
-                  {mission.equipmentType}
+                  {mission.engin?.designation}
                 </Text>
                 <Text className="text-sm text-gray-600">
-                  N° Série: {mission.equipmentSerial}
+                  N° Série: {mission.engin?.numero_serie}
                 </Text>
               </View>
 
               {/* Maintenance Details */}
               <View className="border-t border-gray-100 pt-3">
                 <Text className="text-sm font-medium text-gray-900 mb-1">
-                  {mission.maintenanceType}
+                  {mission.type}
                 </Text>
                 <Text className="text-sm text-gray-600 mb-3">
                   {mission.description}
@@ -323,31 +244,20 @@ export default function MissionsScreen() {
                     <View className="flex-row items-center flex-1">
                       <Calendar size={16} color="#6b7280" />
                       <Text className="ml-2 text-sm text-gray-600">
-                        {new Date(mission.scheduledDate).toLocaleDateString(
-                          "fr-FR"
-                        )}
+                        {mission.date_planifiee}
                       </Text>
                     </View>
 
                     <View className="flex-row items-center flex-1">
                       <Clock size={16} color="#6b7280" />
-                      <Text className="ml-2 text-sm text-gray-600">
-                        {mission.estimatedDuration}
-                      </Text>
+                      <Text className="ml-2 text-sm text-gray-600">4h</Text>
                     </View>
                   </View>
 
                   <View className="flex-row items-center">
                     <Text className="text-sm text-gray-500">Technicien: </Text>
                     <Text className="text-sm text-gray-700 font-medium">
-                      {mission.technician}
-                    </Text>
-                  </View>
-
-                  <View className="flex-row items-center">
-                    <Text className="text-sm text-gray-500">Lieu: </Text>
-                    <Text className="text-sm text-gray-700 font-medium">
-                      {mission.location}
+                      {mission.technicien?.name || "Non assigné"}
                     </Text>
                   </View>
                 </View>
@@ -356,13 +266,21 @@ export default function MissionsScreen() {
           </TouchableOpacity>
         ))}
 
-        {filteredMissions.length === 0 && (
+        {maintenances.length === 0 && (
           <View className="items-center justify-center py-12">
             <Text className="text-gray-500 text-center">
               Aucune mission trouvée pour les critères sélectionnés
             </Text>
           </View>
         )}
+
+        <View className="mb-6">
+          <Pagination
+            currentPage={page}
+            lastPage={lastPage}
+            onPageChange={(p) => setPage(p)}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

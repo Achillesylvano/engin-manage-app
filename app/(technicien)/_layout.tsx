@@ -45,6 +45,17 @@ const AgentLayout = () => {
 
       {/* Incident */}
       <Tabs.Screen
+        name="notifications"
+        options={{
+          title: "Incidents",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="settings" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Profile */}
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",

@@ -90,3 +90,35 @@ export interface DailyUsageRetour {
   carburant_rempli_l?: number | null;
   is_returned: true;
 }
+
+export interface Maintenance {
+  id: number;
+  type: string;
+  date_planifiee: string;
+  statut: string;
+  description: string;
+  engin: Engin | null;
+  engin_id: number | null;
+  technicien: User | null;
+  technicien_id: number | null;
+  responsable: User | null;
+  responsable_id: number | null;
+  incident?: Incident | null;
+  incident_id: number | null;
+}
+
+export interface Incident {
+  id: number;
+  date_signalement: string; 
+  description: string;
+  niveau_gravite: number | string;
+  resolu: boolean;
+  date_resolution: string | null; 
+  engin: Engin | null;
+  technicien: User | null;
+  operateur: User | null;
+  daily_usage: DailyUsage | null;
+  engin_id: number | null;
+  operateur_id: number | null;
+  daily_usage_id: number | null;
+}
