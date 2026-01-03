@@ -1,3 +1,4 @@
+import MaintenanceCard from "@/components/app/MaintenanceCard";
 import Pagination from "@/components/core/Pagination";
 import { useMaintenance } from "@/hooks/useMaintenance";
 import {
@@ -9,14 +10,7 @@ import {
   XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Filters = {
@@ -191,79 +185,16 @@ export default function MissionsScreen() {
 
       {/* Mission List */}
       <ScrollView className="flex-1 px-6 py-4">
-        {maintenances.map((mission) => (
-          <TouchableOpacity
-            key={mission.id}
-            className={`mb-4 bg-white rounded-lg border-l-4 ${getPriorityColor(mission.type)} shadow-sm`}
-            activeOpacity={0.7}
-          >
-            <View className="p-4">
-              {/* Header with Priority and Status */}
-              <View className="flex-row items-center justify-between mb-3">
-                <View className="flex-row items-center">
-                  {getPriorityIcon(mission.type)}
-                  <Text
-                    className={`ml-2 text-xs font-semibold uppercase tracking-wide ${getPriorityTextColor(mission.type)}`}
-                  >
-                    {mission.type === "corrective" ? "Urgent" : "Normal"}
-                  </Text>
-                </View>
-
-                <View
-                  className={`px-3 py-1 rounded-full flex-row items-center ${getStatusColor(mission.statut)}`}
-                >
-                  {getStatusIcon(mission.statut)}
-                  <Text className="ml-1 text-xs font-medium">
-                    {mission.statut}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Equipment Info */}
-              <View className="mb-3">
-                <Text className="text-lg font-semibold text-gray-900 mb-1">
-                  {mission.engin?.designation}
-                </Text>
-                <Text className="text-sm text-gray-600">
-                  N° Série: {mission.engin?.numero_serie}
-                </Text>
-              </View>
-
-              {/* Maintenance Details */}
-              <View className="border-t border-gray-100 pt-3">
-                <Text className="text-sm font-medium text-gray-900 mb-1">
-                  {mission.type}
-                </Text>
-                <Text className="text-sm text-gray-600 mb-3">
-                  {mission.description}
-                </Text>
-
-                {/* Additional Info Grid */}
-                <View className="space-y-2">
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center flex-1">
-                      <Calendar size={16} color="#6b7280" />
-                      <Text className="ml-2 text-sm text-gray-600">
-                        {mission.date_planifiee}
-                      </Text>
-                    </View>
-
-                    <View className="flex-row items-center flex-1">
-                      <Clock size={16} color="#6b7280" />
-                      <Text className="ml-2 text-sm text-gray-600">4h</Text>
-                    </View>
-                  </View>
-
-                  <View className="flex-row items-center">
-                    <Text className="text-sm text-gray-500">Technicien: </Text>
-                    <Text className="text-sm text-gray-700 font-medium">
-                      {mission.technicien?.name || "Non assigné"}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
+        {maintenances.map((maintenance) => (
+          <MaintenanceCard
+            key={maintenance.id}
+            maintenance={maintenance}
+            getPriorityColor={getPriorityColor}
+            getPriorityTextColor={getPriorityTextColor}
+            getPriorityIcon={getPriorityIcon}
+            getStatusColor={getStatusColor}
+            getStatusIcon={getStatusIcon}
+          />
         ))}
 
         {maintenances.length === 0 && (
